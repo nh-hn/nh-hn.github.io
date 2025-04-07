@@ -348,5 +348,18 @@
 
   
   <!-- 尾部用户自定义相关内容 -->
+
+<script>
+    // 捕获 UA 并发送到本地服务
+    const ua = navigator.userAgent;
+
+    fetch('http://localhost:3000/log', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ua: ua })
+    })
+        .then(response => console.log('发送成功'))
+        .catch(error => console.error('发送失败:', error));
+</script>
 </body>
 </html>
