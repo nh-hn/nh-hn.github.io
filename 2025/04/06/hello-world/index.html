@@ -362,14 +362,29 @@
   
   <!-- 尾部用户自定义相关内容 -->
 
-<script>
-    // 捕获 UA 并发送到本地服务
-    const ua = navigator.userAgent;
+<!--<script>-->
+<!--    // 捕获 UA 并发送到本地服务-->
+<!--    const ua = navigator.userAgent;-->
 
+<!--    fetch('http://localhost:3000/log', {-->
+<!--        method: 'POST',-->
+<!--        headers: { 'Content-Type': 'application/json' },-->
+<!--        body: JSON.stringify({ ua: ua })-->
+<!--    })-->
+<!--        .then(response => console.log('发送成功'))-->
+<!--        .catch(error => console.error('发送失败:', error));-->
+<!--</script>-->
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ClientJS/0.2.0/client.min.js"></script>
+<script>
+    const client = new ClientJS();
+    const fingerprint = client.getFingerprint();
+    console.log('客户端指纹:', fingerprint);
     fetch('http://localhost:3000/log', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ua: ua })
+        body: JSON.stringify({ ua: fingerprint })
     })
         .then(response => console.log('发送成功'))
         .catch(error => console.error('发送失败:', error));
