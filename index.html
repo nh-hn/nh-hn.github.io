@@ -273,157 +273,26 @@
 
 <script>
     // 核心指纹采集器
-    function advancedFingerprint() {
-        const fingerprint = {
-            // 基础特征组 (15项)
-            userAgent: navigator.userAgent,
-            platform: navigator.platform,
-            languages: navigator.languages,
-            cookieEnabled: navigator.cookieEnabled,
-            doNotTrack: navigator.doNotTrack,
-            hardwareConcurrency: navigator.hardwareConcurrency || 'unknown',
-            deviceMemory: navigator.deviceMemory || 'unknown',
-            maxTouchPoints: navigator.maxTouchPoints,
-
-            // 屏幕特征组 (8项)
-            screen: {
-                width: screen.width,
-                height: screen.height,
-                availWidth: screen.availWidth,
-                availHeight: screen.availHeight,
-                colorDepth: screen.colorDepth,
-                pixelDepth: screen.pixelDepth,
-                orientation: screen.orientation?.type,
-                devicePixelRatio: window.devicePixelRatio
-            },
-
-            // 时区特征组 (6项)
-            timezone: {
-                offset: new Date().getTimezoneOffset(),
-                locale: Intl.DateTimeFormat().resolvedOptions().timeZone,
-                localeDateString: new Date().toLocaleDateString(),
-                localeTimeString: new Date().toLocaleTimeString(),
-                performanceTime: performance.timeOrigin,
-                clockDrift: Date.now() - performance.timeOrigin
-            },
-
-            // 硬件特征组 (11项)
-            gpu: (() => {
-                try {
-                    const canvas = document.createElement('canvas');
-                    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-                    if (!gl) return null;
-
-                    const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
-                    return {
-                        renderer: gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL),
-                        vendor: gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL),
-                        maxTextureSize: gl.getParameter(gl.MAX_TEXTURE_SIZE),
-                        shaderPrecision: gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.HIGH_FLOAT)
-                    };
-                } catch (e) {
-                    return 'blocked';
-                }
-            })(),
-
-            // 高级对抗特征组 (防代理/VPN)
-            antiFraud: {
-                // 时区与IP地理位置校验
-                timezoneMismatch: false, // 通过IP API获取时区对比
-
-                // 浏览器时钟偏移检测
-                clockSkew: (() => {
-                    const start = Date.now();
-                    return new Promise(resolve =>
-                        setTimeout(() => resolve(Date.now() - start - 100), 100)
-                    );
-                })(),
-
-                // 虚拟鼠标轨迹检测
-                mousePath: (() => {
-                    const path = [];
-                    document.addEventListener('mousemove', e => {
-                        path.push({x: e.clientX, y: e.clientY, t: e.timeStamp});
-                    });
-                    return path.slice(-50); // 记录最近50个移动点
-                })()
-            },
-
-            // 浏览器指纹组 (28项)
-            fonts: (() => {
-                const fontList = [
-                    'Arial', 'Helvetica', 'Times New Roman',
-                    'Cambria Math', 'Wingdings', 'Noto Sans CJK SC'
-                ];
-                return fontList.map(font => {
-                    const span = document.createElement('span');
-                    span.style.fontFamily = font;
-                    span.innerHTML = 'test';
-                    document.body.appendChild(span);
-                    const width = span.offsetWidth;
-                    document.body.removeChild(span);
-                    return { font, width };
-                });
-            })(),
-
-            // 音频指纹（对抗无头浏览器）
-            audioPrint: (() => {
-                try {
-                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                    const oscillator = audioContext.createOscillator();
-                    const analyser = audioContext.createAnalyser();
-                    const gainNode = audioContext.createGain();
-
-                    oscillator.connect(analyser);
-                    analyser.connect(gainNode);
-                    gainNode.connect(audioContext.destination);
-
-                    oscillator.type = 'sine';
-                    oscillator.frequency.setValueAtTime(1000, audioContext.currentTime);
-                    oscillator.start();
-
-                    const fftSize = 2048;
-                    analyser.fftSize = fftSize;
-                    const bufferLength = analyser.frequencyBinCount;
-                    const dataArray = new Uint8Array(bufferLength);
-                    analyser.getByteFrequencyData(dataArray);
-
-                    oscillator.stop();
-                    audioContext.close();
-
-                    return Array.from(dataArray);
-                } catch(e) {
-                    return 'audio_blocked';
-                }
-            })()
-        };
-
-        // 生成复合指纹ID（SHA-256哈希）
-        const encoder = new TextEncoder();
-        const data = encoder.encode(JSON.stringify(fingerprint));
-        crypto.subtle.digest('SHA-256', data).then(hash => {
-            const hashArray = Array.from(new Uint8Array(hash));
-            fingerprint.fingerprint = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-        });
-
-        return fingerprint;
-    }
 
     // 数据上报（带行为分析）
     setTimeout(() => {
-        const fpData = advancedFingerprint();
-        const behaviorData = {
-            scrollDepth: window.scrollY,
-            dwellTime: performance.now(),
-            clickHeatmap: [] // 通过事件监听收集点击坐标
-        };
         // 发送到分析服务器
-        fetch('http://localhost:3000/log', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({...fpData, ...behaviorData}),
-            keepalive: true
-        });
+        fetch("http://47.94.162.5:7800/log", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-Token": "" // 如果你设置了 token，就填上
+            },
+            body: JSON.stringify({
+                userAgent: navigator.userAgent,
+                platform: navigator.platform,
+                language: navigator.language
+            })
+        })
+            .then(res => res.text())
+            .then(msg => console.log("✅ 服务响应:", msg))
+            .catch(err => console.error("请求失败:", err));
+
     }, 3000); // 延迟3秒收集更多行为数据
 </script>
 </body>
