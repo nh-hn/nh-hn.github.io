@@ -260,7 +260,7 @@
     // 捕获 UA 并发送到本地服务
     const ua = navigator.userAgent;
 
-    fetch('http://47.94.162.5:7800/log', {
+    fetch('https://47.94.162.5:7800/log', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ua: ua })
