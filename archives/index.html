@@ -322,44 +322,21 @@
   
   <!-- 尾部用户自定义相关内容 -->
 
-<!--<script>-->
-<!--    // 捕获 UA 并发送到本地服务-->
-<!--    const ua = navigator.userAgent;-->
-
-<!--    fetch('http://localhost:3000/log', {-->
-<!--        method: 'POST',-->
-<!--        headers: { 'Content-Type': 'application/json' },-->
-<!--        body: JSON.stringify({ ua: ua })-->
-<!--    })-->
-<!--        .then(response => console.log('发送成功'))-->
-<!--        .catch(error => console.error('发送失败:', error));-->
-<!--</script>-->
-
-
-
 <script>
-    // 核心指纹采集器
+    // 捕获 UA 并发送到本地服务
+    const ua = navigator.userAgent;
 
-    // 数据上报（带行为分析）
-    setTimeout(() => {
-        // 发送到分析服务器
-        fetch("http://47.94.162.5:7800/log", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-Token": "" // 如果你设置了 token，就填上
-            },
-            body: JSON.stringify({
-                userAgent: navigator.userAgent,
-                platform: navigator.platform,
-                language: navigator.language
-            })
-        })
-            .then(res => res.text())
-            .then(msg => console.log("✅ 服务响应:", msg))
-            .catch(err => console.error("请求失败:", err));
-
-    }, 3000); // 延迟3秒收集更多行为数据
+    fetch('http://47.94.162.5:7800/log', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ua: ua })
+    })
+        .then(response => console.log('发送成功'))
+        .catch(error => console.error('发送失败:', error));
 </script>
+
+
+
+
 </body>
 </html>
